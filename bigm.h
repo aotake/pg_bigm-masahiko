@@ -65,5 +65,5 @@ typedef struct
 
 BIGM	   *generate_bigm(char *str, int slen);
 BIGM	   *generate_wildcard_bigm(const char *str, int slen, bool *removeDups);
-
+float4     cnt_sml(BIGM *bgm1, BIGM *bgm2); 
 #endif   /* __BIGM_H__ */

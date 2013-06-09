@@ -29,6 +29,7 @@ PG_MODULE_MAGIC;
 bool	bigm_enable_recheck = false;
 int		bigm_gin_key_limit = 0;
 char	*bigm_last_update = NULL;
+double  bigm_similarity_limit = 0.3;
 
 PG_FUNCTION_INFO_V1(show_bigm);
 Datum		show_bigm(PG_FUNCTION_ARGS);
@@ -38,6 +39,9 @@ Datum		bigmtextcmp(PG_FUNCTION_ARGS);
 
 PG_FUNCTION_INFO_V1(likequery);
 Datum		likequery(PG_FUNCTION_ARGS);
+
+PG_FUNCTION_INFO_V1(similarity);
+Datum           similarity(PG_FUNCTION_ARGS);
 
 void		_PG_init(void);
 void		_PG_fini(void);
@@ -70,6 +74,17 @@ _PG_init(void)
 							NULL,
 							NULL,
 							NULL);
+	DefineCustomRealVariable("pg_bigm.similarity_limit",
+							  "Set the limit of similarity score to return tupele",
+							  NULL,
+							  &bigm_similarity_limit,
+							  0.3,
+							  0, 1.0,
+							  PGC_USERSET,
+							  0,
+							  NULL,
+							  NULL,
+							  NULL);
 
 	/* Can't be set in postgresql.conf */
 	DefineCustomStringVariable("pg_bigm.last_update",
@@ -601,6 +616,43 @@ bigmstrcmp(char *arg1, int len1, char *arg2, int len2)
 	return (len1 == len2) ? 0 : ((len1 < len2) ? -1 : 1);
 }
 
+float4
+cnt_sml(BIGM *bgm1, BIGM *bgm2)
+{
+	bigm       *ptr1,
+		       *ptr2;
+	int        count = 0;
+    int        len1,
+		       len2;
+
+	ptr1 = GETARR(bgm1);
+	ptr2 = GETARR(bgm2);
+
+	len1 = ARRNELEM(bgm1);
+	len2 = ARRNELEM(bgm2);
+
+	if (len1 <= 0 || len2 <= 0)
+		return (float4) 0.0;
+
+	while(ptr1 - GETARR(bgm1) < len1 && ptr2 - GETARR(bgm2) < len2)
+	{
+		int      res = CMPBIGM(ptr1, ptr2);
+
+		if (res < 0)
+			ptr1++;
+		else if (res > 0)
+			ptr2++;
+		else
+		{
+			ptr1++;
+			ptr2++;
+			count++;
+		}
+	}
+
+	return ((float4) count) / ((float4) (len1 + len2 - count));
+}
+
 Datum
 bigmtextcmp(PG_FUNCTION_ARGS)
 {
@@ -612,4 +664,26 @@ bigmtextcmp(PG_FUNCTION_ARGS)
 	int		len2 = VARSIZE_ANY_EXHDR(arg2);
 
 	PG_RETURN_INT32(bigmstrcmp(a1p, len1, a2p, len2));
+}
+
+Datum
+similarity(PG_FUNCTION_ARGS)
+{
+	text       *in1 = PG_GETARG_TEXT_P(0);
+	text       *in2 = PG_GETARG_TEXT_P(1);
+	BIGM       *bgm1,
+		       *bgm2;
+	float4     res;
+
+	bgm1 = generate_bigm(VARDATA(in1), VARSIZE(in1) - VARHDRSZ);
+    bgm2 = generate_bigm(VARDATA(in2), VARSIZE(in2) - VARHDRSZ);
+
+	res = cnt_sml(bgm1, bgm2);
+
+	pfree(bgm1);
+	pfree(bgm2);
+	PG_FREE_IF_COPY(in1, 0);
+	PG_FREE_IF_COPY(in2, 1);
+
+	PG_RETURN_BOOL(res >= bigm_similarity_limit);
 }
