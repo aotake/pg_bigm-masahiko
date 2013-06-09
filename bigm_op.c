@@ -41,7 +41,10 @@ PG_FUNCTION_INFO_V1(likequery);
 Datum		likequery(PG_FUNCTION_ARGS);
 
 PG_FUNCTION_INFO_V1(similarity);
-Datum           similarity(PG_FUNCTION_ARGS);
+Datum       similarity(PG_FUNCTION_ARGS);
+
+PG_FUNCTION_INFO_V1(similarity_op);
+Datum       similarity_op(PG_FUNCTION_ARGS);
 
 void		_PG_init(void);
 void		_PG_fini(void);
@@ -685,5 +688,14 @@ similarity(PG_FUNCTION_ARGS)
 	PG_FREE_IF_COPY(in1, 0);
 	PG_FREE_IF_COPY(in2, 1);
 
+	PG_RETURN_FLOAT4(res);
+}
+
+Datum
+similarity_op(PG_FUNCTION_ARGS)
+{
+	float4     res = DatumGetFloat4(DirectFunctionCall2(similarity,
+														PG_GETARG_DATUM(0),
+														PG_GETARG_DATUM(1)));
 	PG_RETURN_BOOL(res >= bigm_similarity_limit);
 }

@@ -33,9 +33,14 @@ AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT IMMUTABLE;
 
 CREATE FUNCTION similarity(text, text)
+RETURNS float4
+AS 'MODULE_PATHNAME'
+LANGUAGE C STRICT IMMUTABLE;
+
+CREATE FUNCTION similarity_op(text, text)
 RETURNS bool
 AS 'MODULE_PATHNAME'
-LANGUAGE C STRICT STABLE  -- stable because depends on bigm_limit
+LANGUAGE C STRICT STABLE; -- stable bacause depends on bigm_similarity_limit;
 
 -- create the oprerator
 
