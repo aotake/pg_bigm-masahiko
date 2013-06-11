@@ -47,7 +47,7 @@ LANGUAGE C STRICT STABLE; -- stable bacause depends on bigm_similarity_limit;
 CREATE OPERATOR % (
        LEFTARG = text,
        RIGHTARG = text,
-       PROCEDURE = similarity,
+       PROCEDURE = similarity_op,
        COMMUTATOR = '%',
        RESTRICT = contsel,
        JOIN = contjoinsel
