@@ -38,13 +38,13 @@ PG_FUNCTION_INFO_V1(bigmtextcmp);
 Datum		bigmtextcmp(PG_FUNCTION_ARGS);
 
 PG_FUNCTION_INFO_V1(likequery);
-Datum		likequery(PG_FUNCTION_ARGS);
+Datum		likequery_bigm(PG_FUNCTION_ARGS);
 
 PG_FUNCTION_INFO_V1(similarity);
-Datum       similarity(PG_FUNCTION_ARGS);
+Datum       similarity_bigm(PG_FUNCTION_ARGS);
 
 PG_FUNCTION_INFO_V1(similarity_op);
-Datum       similarity_op(PG_FUNCTION_ARGS);
+Datum       similarity_op_bigm(PG_FUNCTION_ARGS);
 
 void		_PG_init(void);
 void		_PG_fini(void);
@@ -556,7 +556,7 @@ show_bigm(PG_FUNCTION_ARGS)
 }
 
 Datum
-likequery(PG_FUNCTION_ARGS)
+likequery_bigm(PG_FUNCTION_ARGS)
 {
 	text	   *query = PG_GETARG_TEXT_PP(0);
 	const char *str;
@@ -670,7 +670,7 @@ bigmtextcmp(PG_FUNCTION_ARGS)
 }
 
 Datum
-similarity(PG_FUNCTION_ARGS)
+similarity_bigm(PG_FUNCTION_ARGS)
 {
 	text       *in1 = PG_GETARG_TEXT_P(0);
 	text       *in2 = PG_GETARG_TEXT_P(1);
@@ -692,9 +692,9 @@ similarity(PG_FUNCTION_ARGS)
 }
 
 Datum
-similarity_op(PG_FUNCTION_ARGS)
+similarity_op_bigm(PG_FUNCTION_ARGS)
 {
-	float4     res = DatumGetFloat4(DirectFunctionCall2(similarity,
+	float4     res = DatumGetFloat4(DirectFunctionCall2(similarity_bigm,
 														PG_GETARG_DATUM(0),
 														PG_GETARG_DATUM(1)));
 	PG_RETURN_BOOL(res >= bigm_similarity_limit);

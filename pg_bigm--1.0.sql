@@ -32,12 +32,12 @@ RETURNS int4
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT IMMUTABLE;
 
-CREATE FUNCTION similarity(text, text)
+CREATE FUNCTION similarity_bigm(text, text)
 RETURNS float4
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT IMMUTABLE;
 
-CREATE FUNCTION similarity_op(text, text)
+CREATE FUNCTION similarity_op_bigm(text, text)
 RETURNS bool
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT STABLE; -- stable bacause depends on bigm_similarity_limit;
@@ -47,7 +47,7 @@ LANGUAGE C STRICT STABLE; -- stable bacause depends on bigm_similarity_limit;
 CREATE OPERATOR % (
        LEFTARG = text,
        RIGHTARG = text,
-       PROCEDURE = similarity_op,
+       PROCEDURE = similarity_op_bigm,
        COMMUTATOR = '%',
        RESTRICT = contsel,
        JOIN = contjoinsel
@@ -67,19 +67,7 @@ AS
         STORAGE         text;
 
 
--- support also gin_trgm_ops for backward-compatibility
-CREATE OPERATOR CLASS gin_trgm_ops
-FOR TYPE text USING gin
-AS
-        OPERATOR        1       pg_catalog.~~ (text, text),
-        FUNCTION        1       bigmtextcmp (text, text),
-        FUNCTION        2       gin_extract_value_bigm (text, internal),
-        FUNCTION        3       gin_extract_query_bigm (text, internal, int2, internal, internal, internal, internal),
-        FUNCTION        4       gin_bigm_consistent (internal, int2, text, int4, internal, internal, internal, internal),
-        FUNCTION        5       gin_bigm_compare_partial (text, text, int2, internal),
-        STORAGE         text;
-
-CREATE FUNCTION likequery(text)
+CREATE FUNCTION likequery_bigm(text)
 RETURNS text
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT IMMUTABLE;
