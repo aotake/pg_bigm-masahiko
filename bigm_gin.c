@@ -143,6 +143,7 @@ gin_extract_query_bigm(PG_FUNCTION_ARGS)
 		case SimilarityStrategyNumber:
 		{
 			bgm = generate_bigm(str, slen);
+			bgmlen = ARRNELEM(bgm);
 			break;
 		}
 		default:
@@ -235,6 +236,8 @@ gin_bigm_consistent(PG_FUNCTION_ARGS)
 					ntrue++;
 			}
 			res = (nkeys == ntrue) ? true : (((((float4) ntrue) / ((float4) (nkeys - ntrue))) >= bigm_similarity_limit ) ? true : false);
+			/* recheck is false foced */
+			recheck = false;
 			break;
 		}
 		default:
