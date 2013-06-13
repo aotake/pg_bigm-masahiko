@@ -26,7 +26,7 @@ extern int	bigm_gin_key_limit;
 
 /* operator strategy numbers */
 #define LikeStrategyNumber			1
-
+#define SimilarityStrategyNumber    2
 typedef struct
 {
 	bool	pmatch;		/* partial match is required? */
@@ -62,6 +62,8 @@ typedef struct
 #define CALCGTSIZE(len) (VARHDRSZ + len * sizeof(bigm))
 #define GETARR(x)		( (bigm *)( (char*)x + VARHDRSZ ) )
 #define ARRNELEM(x) ( ( VARSIZE(x) - VARHDRSZ )/sizeof(bigm) )
+
+extern double bigm_similarity_limit;
 
 BIGM	   *generate_bigm(char *str, int slen);
 BIGM	   *generate_wildcard_bigm(const char *str, int slen, bool *removeDups);

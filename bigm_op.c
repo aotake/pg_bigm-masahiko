@@ -80,7 +80,7 @@ _PG_init(void)
 	DefineCustomRealVariable("pg_bigm.similarity_limit",
 							  "Set the limit of similarity score to return tupele",
 							  NULL,
-							  &bigm_similarity_limit,
+							 &bigm_similarity_limit,
 							  0.3,
 							  0, 1.0,
 							  PGC_USERSET,

@@ -57,7 +57,8 @@ CREATE OPERATOR % (
 CREATE OPERATOR CLASS gin_bigm_ops
 FOR TYPE text USING gin
 AS
-        OPERATOR        1       % (text, text),
+        OPERATOR        1       pg_catalog.~~ (text, text),
+	OPERATOR        2	% (text, text),
         FUNCTION        1       bigmtextcmp (text, text),
         FUNCTION        2       gin_extract_value_bigm (text, internal),
         FUNCTION        3       gin_extract_query_bigm (text, internal, int2, internal, internal, internal, internal),

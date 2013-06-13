@@ -95,12 +95,13 @@ gin_extract_query_bigm(PG_FUNCTION_ARGS)
 	int32		i;
 	bool		removeDups;
 
+	char        *str = VARDATA(val);
+	int         slen = VARSIZE(val) - VARHDRSZ;
+	
 	switch (strategy)
 	{
 		case LikeStrategyNumber:
 		{
-			char	*str = VARDATA(val);
-			int		slen = VARSIZE(val) - VARHDRSZ;
 			bool	*recheck;
 
 			/*
@@ -137,6 +138,11 @@ gin_extract_query_bigm(PG_FUNCTION_ARGS)
 			}
 			else
 				*recheck = true;
+			break;
+		}
+		case SimilarityStrategyNumber:
+		{
+			bgm = generate_bigm(str, slen);
 			break;
 		}
 		default:
@@ -190,7 +196,8 @@ gin_bigm_consistent(PG_FUNCTION_ARGS)
 	Pointer	  *extra_data = (Pointer *) PG_GETARG_POINTER(4);
 	bool	   *recheck = (bool *) PG_GETARG_POINTER(5);
 	bool		res;
-	int32		i;
+	int32		i,
+		        ntrue;
 
 	/*
 	 * Don't recheck the heap tuple against the query if either
@@ -205,6 +212,7 @@ gin_bigm_consistent(PG_FUNCTION_ARGS)
 	switch (strategy)
 	{
 		case LikeStrategyNumber:
+		{
 			/* Check if all extracted bigrams are presented. */
 			res = true;
 			for (i = 0; i < nkeys; i++)
@@ -216,6 +224,19 @@ gin_bigm_consistent(PG_FUNCTION_ARGS)
 				}
 			}
 			break;
+		}
+		case SimilarityStrategyNumber:
+		{
+			/* Count the matches */
+			ntrue = 0;
+			for (i = 0; i < nkeys; i++)
+			{
+				if (check[i])
+					ntrue++;
+			}
+			res = (nkeys == ntrue) ? true : (((((float4) ntrue) / ((float4) (nkeys - ntrue))) >= bigm_similarity_limit ) ? true : false);
+			break;
+		}
 		default:
 			elog(ERROR, "unrecognized strategy number: %d", strategy);
 			res = false;		/* keep compiler quiet */
